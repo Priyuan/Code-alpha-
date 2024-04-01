@@ -1,0 +1,84 @@
+#include <iostream>
+#include <filesystem>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <cstdio>
+
+namespace fs = std::filesystem;
+using namespace std;
+
+void listDirectory(const fs::path& directory) {
+    cout << "Contents of " << directory << ":\n";
+    for (const auto& entry : fs::directory_iterator(directory)) {
+        cout << entry.path().filename() << "\n";
+    }
+}
+
+void createDirectory(const fs::path& directory) {
+    if (fs::create_directory(directory)) {
+        cout << "Directory created successfully.\n";
+    } else {
+        cout << "Failed to create directory.\n";
+    }
+}
+
+void copyFile(const fs::path& source, const fs::path& destination) {
+    try {
+        fs::copy_file(source, destination, fs::copy_options::overwrite_existing);
+        cout << "File copied successfully.\n";
+    } catch (const fs::filesystem_error& e) {
+        cout << "Error: " << e.what() << endl;
+    }
+}
+
+void moveFile(const fs::path& source, const fs::path& destination) {
+    try {
+        fs::rename(source, destination);
+        cout << "File moved successfully.\n";
+    } catch (const fs::filesystem_error& e) {
+        cout << "Error: " << e.what() << endl;
+    }
+}
+
+int main() {
+    string command;
+    string fileName;
+    string source, destination;
+    fs::path currentDirectory = fs::current_path();
+
+    cout << "Welcome to the Basic File Manager!\n";
+    cout << "Current directory: " << currentDirectory << "\n";
+
+    while (true) {
+        cout << "\nEnter a command (list/create/copy/move/exit): ";
+        cin >> command;
+
+        if (command == "list") {
+            listDirectory(currentDirectory);
+        } else if (command == "create") {
+            cout << "Enter the name of the directory to create: ";
+            cin >> fileName;
+            createDirectory(currentDirectory / fileName);
+        } else if (command == "copy") {
+            cout << "Enter the name of the file to copy: ";
+            cin >> source;
+            cout << "Enter the destination path: ";
+            cin >> destination;
+            copyFile(currentDirectory / source, fs::path(destination) / source);
+        } else if (command == "move") {
+            cout << "Enter the name of the file to move: ";
+            cin >> source;
+            cout << "Enter the destination path: ";
+            cin >> destination;
+            moveFile(currentDirectory / source, fs::path(destination) / source);
+        } else if (command == "exit") {
+            cout << "Exiting the file manager. Goodbye!\n";
+            break;
+        } else {
+            cout << "Invalid command. Please try again.\n";
+        }
+    }
+
+    return 0;
+}
